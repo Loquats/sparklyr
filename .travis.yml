@@ -30,19 +30,20 @@ matrix:
     #   env:
     #     - SPARK_VERSION="2.3.2"
     #     - JAVA_VERSION=oraclejdk8
-    - name: "Spark 2.4.4 (R release, oraclejdk8)"
+    - name: "Spark 2.4.3 (R release, oraclejdk8) with Databricks Connect"
       r: release
       r_packages:
         - glmnet
       env:
-        - SPARK_VERSION="2.4.4"
+        - SPARK_VERSION="2.4.3"
         - JAVA_VERSION=oraclejdk8
         - CODE_COVERAGE="true"
-    - name: "Spark master (R release, oraclejdk8)"
-      r: release
-      env:
-        - SPARK_VERSION="master"
-        - JAVA_VERSION=oraclejdk8
+        - DATABRICKS_CONNECT="true"
+    # - name: "Spark master (R release, oraclejdk8)"
+    #   r: release
+    #   env:
+    #     - SPARK_VERSION="master"
+    #     - JAVA_VERSION=oraclejdk8
     # - name: "Livy 0.5.0 (R release, oraclejdk8, Spark 2.3.0)"
     #   r: release
     #   env:
@@ -106,6 +107,19 @@ before_install:
   - if [[ ! -z "$ARROW_VERSION" ]]; then chmod +x ./ci/arrow-$ARROW_SOURCE.sh ; "./ci/arrow-$ARROW_SOURCE.sh" $ARROW_VERSION; fi
   - if [[ $SPARK_VERSION == "master" ]]; then chmod +x ./ci/spark-master-install.sh ; "./ci/spark-master-install.sh"; fi
   - if [[ $ARROW_ENABLED == "true" ]]; then Rscript ci/.travis.R --arrow $ARROW_BRANCH; fi
+  - |
+    if [[ $DATABRICKS_CONNECT == "true" ]]; then
+      pip install databricks-connect==5.5.3
+      DATABRICKS_ADDRESS=https://westus2.azuredatabricks.net
+      DATABRICKS_API_TOKEN=dapi6c22303f731eb3b52f98f4a0f932d575
+      DATABRICKS_CLUSTER_ID=1203-221219-team279
+      DATABRICKS_ORG_ID=5112643644973830
+      DATABRICKS_PORT=15001
+      databricks-connect get-jar-dir
+      databricks-connect get-spark-home
+      databricks-connect test
+      export SPARK_HOME=$(databricks-connect get-spark-home)
+    fi
 
 script:
   - |
