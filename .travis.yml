@@ -35,7 +35,7 @@ before_install:
   - if [[ $ARROW_ENABLED == "true" ]]; then Rscript ci/.travis.R --arrow $ARROW_BRANCH; fi
   - |
     if [[ $DATABRICKS_CONNECT == "true" ]]; then
-      pip install databricks-connect==5.5.3
+      sudo pip install databricks-connect==5.5.3
       DATABRICKS_ADDRESS=https://westus2.azuredatabricks.net
       DATABRICKS_API_TOKEN=dapi6c22303f731eb3b52f98f4a0f932d575
       DATABRICKS_CLUSTER_ID=1203-221219-team279
