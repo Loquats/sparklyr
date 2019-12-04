@@ -53,6 +53,7 @@ script:
     export SPARK_HOME=$(databricks-connect get-spark-home)
     echo $SPARK_HOME
     echo $SPARK_VERSION
+    databricks-connect test
     R CMD build .
     export SPARKLYR_LOG_FILE=/tmp/sparklyr.log
     R CMD check --no-build-vignettes --no-manual --no-tests sparklyr*tar.gz
