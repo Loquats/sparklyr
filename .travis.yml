@@ -15,100 +15,61 @@ warnings_are_errors: true
 
 matrix:
   include:
-    - name: "Spark 1.6.3 (R 3.2, openjdk7)"
-      r: 3.2
-      env:
-        - SPARK_VERSION="1.6.3"
-        - JAVA_VERSION=openjdk7
-    - name: "Spark 2.2.1 (R oldrel, oraclejdk8)"
-      r: oldrel
-      env:
-        - SPARK_VERSION="2.2.1"
-        - JAVA_VERSION=oraclejdk8
-    - name: "Spark 2.3.2 (R release, oraclejdk8)"
+    - name: "Spark 2.4.3 (R release, oraclejdk8) with Databricks Connect"
       r: release
       env:
-        - SPARK_VERSION="2.3.2"
+        - SPARK_VERSION="2.4.3"
         - JAVA_VERSION=oraclejdk8
-    - name: "Spark 2.4.4 (R release, oraclejdk8)"
-      r: release
-      r_packages:
-        - glmnet
-      env:
-        - SPARK_VERSION="2.4.4"
-        - JAVA_VERSION=oraclejdk8
-        - CODE_COVERAGE="true"
-    - name: "Spark master (R release, oraclejdk8)"
-      r: release
-      env:
-        - SPARK_VERSION="master"
-        - JAVA_VERSION=oraclejdk8
-    - name: "Livy 0.5.0 (R release, oraclejdk8, Spark 2.3.0)"
-      r: release
-      env:
-        - LIVY_VERSION="0.5.0"
-        - SPARK_VERSION="2.3.0"
-        - JAVA_VERSION=oraclejdk8
-    - name: "Arrow 0.11.0 (ref = 'dc5df8f')"
-      r: release
-      env:
-        - ARROW_ENABLED="true"
-        - ARROW_BRANCH="dc5df8f"
-        - JAVA_VERSION=oraclejdk8
-      addons:
-        apt:
-          sources:
-            - sourceline: deb https://arrowlib.rstudio.com/ubuntu/ trusty universe
-              key_url: https://arrowlib.rstudio.com/ubuntu/red-data-tools-keyring.gpg
-          packages:
-            - apt-transport-https
-            - lsb-release
-            - libarrow-dev
-            - libarrow-glib-dev
-    - name: "Arrow 0.13.0 (ref = 'apache-arrow-0.13.0')"
-      r: release
-      sudo: true
-      env:
-        - ARROW_ENABLED="true"
-        - ARROW_VERSION="0.13.0"
-        - ARROW_BRANCH="apache-arrow-0.13.0"
-        - ARROW_SOURCE="install"
-        - JAVA_VERSION=oraclejdk8
-    - name: "Arrow Devel (ref = '')"
-      r: release
-      dist: xenial
-      sudo: true
-      env:
-        - ARROW_ENABLED="true"
-        - ARROW_VERSION="devel"
-        - ARROW_SOURCE="build"
-        - JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64/jre"
-        - LD_LIBRARY_PATH="/usr/local/lib"
-      addons:
-        apt:
-          packages:
-            - openjdk-8-jre
-    - name: "Deps Devel (tidyverse, r-lib, forge)"
-      env: R_DEVEL_PACKAGES="true"
-      r_github_packages:
-        - tidyverse/dplyr
-        - tidyverse/dbplyr
-        - tidyverse/tibble
-        - r-lib/rlang
-        - rstudio/forge
-        - r-lib/ellipsis
+        # Encrypt user token using https://docs.travis-ci.com/user/encryption-keys/#usage
+        - secure: "QyIs97hoL106CxEiX6oWEv1kVTLiJMnPU2RZxwWzv+UvlT8GssunUsI0gTwn9zXFzslBsR1B4IDLJsR6ZQ2M8bd5ijyUS/4jf890M7KvpuubFOjBiRKI9fD662CrImBD68WkGdZ+cvhV61Ly7KJTLxnIQdpOv4STtuMpSMPXesIj33gcGBOShAdeA9JTupe33XjybkWUcglMvZkJ83PzA+rT5IHQowbdSXLL5KPcOMkntr804IyijTfg/F+nS6NJ49vX6tIo8t4aDiC4s+APls7xiSWcwI7S5tZvbB94R/AgYduQTdlzNJR0OxnbwiVwC73bKnzEkIarRf43hlHEpXowD0180FK/g9dKrECqbErcR5PPXuk8lemuuiLcaNjSI1ZXPb+fxqmUylOOOsKUbeK/I2RzjUm/lzbEh4+4nMMDu1I77cVe+LGSc1g7VRGjlRsyiuZBNIBOV5ut20SY4fMZia4Z6uKzDrExsw+14rHtcHmqaHCGxENgTkkJ28YwZzoO0QbcqmUTlVvYLUVIAQm/e8kkHtq5MmO/Z4wY+GvpwZk83wAJTWfexY9anF8rNb7tg3AphvkHY13HXgZ6mSovQNznmF6KyC6MksYl4FCCg+mQ6xIfpqypWUslh/mUvPBOnwNjffmJTQpvAj0JQFcjKGSYKb5Ozh2+bHqTg8k="
   allow_failures:
     - env: R_DEVEL_PACKAGES="true"
 
 before_install:
+  # https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/use-conda-with-travis-ci.html
+  - sudo apt-get update
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
+
+  # Replace dep1 dep2 ... with your dependencies
+  - conda create -q -n dbconnect python=3.5
+  - conda activate dbconnect
+  - python --version
+
   - if [[ ! -z "$JAVA_VERSION" ]]; then jdk_switcher use $JAVA_VERSION ; fi
   - echo $JAVA_HOME
   - if [[ ! -z "$ARROW_VERSION" ]]; then chmod +x ./ci/arrow-$ARROW_SOURCE.sh ; "./ci/arrow-$ARROW_SOURCE.sh" $ARROW_VERSION; fi
   - if [[ $SPARK_VERSION == "master" ]]; then chmod +x ./ci/spark-master-install.sh ; "./ci/spark-master-install.sh"; fi
   - if [[ $ARROW_ENABLED == "true" ]]; then Rscript ci/.travis.R --arrow $ARROW_BRANCH; fi
 
+  - pip install databricks-connect==5.5.3
+  - export DATABRICKS_ADDRESS=https://westus2.azuredatabricks.net
+  - export DATABRICKS_CLUSTER_ID=1203-221219-team279
+  - export DATABRICKS_ORG_ID=5112643644973830
+  - export DATABRICKS_PORT=15001
+  - echo "{}" > ~/.databricks-connect   # this means we accept the EULA
+  - databricks-connect get-jar-dir
+  - databricks-connect get-spark-home
+  - databricks-connect test
+
 script:
   - |
+    export SPARK_HOME=$(databricks-connect get-spark-home)
+    echo $SPARK_HOME
+    echo $SPARK_VERSION
+    databricks-connect test
     R CMD build .
     export SPARKLYR_LOG_FILE=/tmp/sparklyr.log
     R CMD check --no-build-vignettes --no-manual --no-tests sparklyr*tar.gz
@@ -120,5 +81,4 @@ script:
     fi
 
 after_failure:
-  - |
-    grep -B 10 -A 20 ERROR /tmp/sparklyr.log
+  - grep -B 10 -A 20 ERROR /tmp/sparklyr.log
