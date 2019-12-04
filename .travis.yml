@@ -24,6 +24,7 @@ matrix:
         - JAVA_VERSION=oraclejdk8
         - CODE_COVERAGE="true"
         - DATABRICKS_CONNECT="true"
+        # Encrypt user token using https://docs.travis-ci.com/user/encryption-keys/#usage
         - secure: "QyIs97hoL106CxEiX6oWEv1kVTLiJMnPU2RZxwWzv+UvlT8GssunUsI0gTwn9zXFzslBsR1B4IDLJsR6ZQ2M8bd5ijyUS/4jf890M7KvpuubFOjBiRKI9fD662CrImBD68WkGdZ+cvhV61Ly7KJTLxnIQdpOv4STtuMpSMPXesIj33gcGBOShAdeA9JTupe33XjybkWUcglMvZkJ83PzA+rT5IHQowbdSXLL5KPcOMkntr804IyijTfg/F+nS6NJ49vX6tIo8t4aDiC4s+APls7xiSWcwI7S5tZvbB94R/AgYduQTdlzNJR0OxnbwiVwC73bKnzEkIarRf43hlHEpXowD0180FK/g9dKrECqbErcR5PPXuk8lemuuiLcaNjSI1ZXPb+fxqmUylOOOsKUbeK/I2RzjUm/lzbEh4+4nMMDu1I77cVe+LGSc1g7VRGjlRsyiuZBNIBOV5ut20SY4fMZia4Z6uKzDrExsw+14rHtcHmqaHCGxENgTkkJ28YwZzoO0QbcqmUTlVvYLUVIAQm/e8kkHtq5MmO/Z4wY+GvpwZk83wAJTWfexY9anF8rNb7tg3AphvkHY13HXgZ6mSovQNznmF6KyC6MksYl4FCCg+mQ6xIfpqypWUslh/mUvPBOnwNjffmJTQpvAj0JQFcjKGSYKb5Ozh2+bHqTg8k="
   allow_failures:
     - env: R_DEVEL_PACKAGES="true"
@@ -45,11 +46,13 @@ before_install:
       databricks-connect get-jar-dir
       databricks-connect get-spark-home
       databricks-connect test
-      export SPARK_HOME=$(databricks-connect get-spark-home)
     fi
 
 script:
   - |
+    export SPARK_HOME=$(databricks-connect get-spark-home)
+    echo $SPARK_HOME
+    echo $SPARK_VERSION
     R CMD build .
     export SPARKLYR_LOG_FILE=/tmp/sparklyr.log
     R CMD check --no-build-vignettes --no-manual --no-tests sparklyr*tar.gz
