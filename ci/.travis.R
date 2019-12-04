@@ -1,8 +1,14 @@
 args <- commandArgs(trailingOnly=TRUE)
 
+print("SPARK_HOME 0")
+print(Sys.getenv("SPARK_HOME"))
+
 if (length(args) == 0) {
   stop("Missing arguments")
 } else if (args[[1]] == "--testthat") {
+  print("SPARK_HOME 1")
+  print(Sys.getenv("SPARK_HOME"))
+
   if (package_version(paste(R.Version()$major, R.Version()$minor, sep = ".")) >= "3.3") {
     install.packages("sparklyr.nested")
   }
@@ -10,9 +16,6 @@ if (length(args) == 0) {
   parent_dir <- dir(".", full.names = TRUE)
   sparklyr_package <- parent_dir[grepl("sparklyr_", parent_dir)]
   install.packages(sparklyr_package, repos = NULL, type = "source")
-
-  print("SPARK_HOME 1")
-  print(Sys.getenv("SPARK_HOME"))
 
   on.exit(setwd(".."))
   setwd("tests")
