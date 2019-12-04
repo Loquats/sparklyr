@@ -268,6 +268,11 @@ spark_connect <- function(master,
   # add to our internal list
   spark_connections_add(scon)
 
+  print(paste("master:", master))
+  print(paste("method:", method))
+  print(paste("version:", version))
+  print(paste("SPARK_HOME:", Sys.getenv("SPARK_HOME")))
+
   # return scon
   scon
 }

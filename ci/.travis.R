@@ -11,6 +11,9 @@ if (length(args) == 0) {
   sparklyr_package <- parent_dir[grepl("sparklyr_", parent_dir)]
   install.packages(sparklyr_package, repos = NULL, type = "source")
 
+  print("SPARK_HOME 1")
+  print(Sys.getenv("SPARK_HOME"))
+
   on.exit(setwd(".."))
   setwd("tests")
   source("testthat.R")
