@@ -17,8 +17,6 @@ matrix:
   include:
     - name: "Spark 2.4.3 (R release, oraclejdk8) with Databricks Connect"
       r: release
-      r_packages:
-        - glmnet
       env:
         - SPARK_VERSION="2.4.3"
         - JAVA_VERSION=oraclejdk8
