@@ -6,6 +6,7 @@ print(Sys.getenv("SPARK_HOME"))
 if (length(args) == 0) {
   stop("Missing arguments")
 } else if (args[[1]] == "--testthat") {
+  print("--testthat")
   print("SPARK_HOME 1")
   print(Sys.getenv("SPARK_HOME"))
 
@@ -21,11 +22,13 @@ if (length(args) == 0) {
   setwd("tests")
   source("testthat.R")
 } else if (args[[1]] == "--coverage") {
+  print("--coverage")
   install.packages("devtools")
 
   devtools::install_github("javierluraschi/covr", ref = "feature/no-batch")
   covr::codecov(type = "none", code = "setwd('tests'); source('testthat.R')", batch = FALSE)
 } else if (args[[1]] == "--arrow") {
+  print("--arrow")
   install.packages("devtools")
 
   if (length(args) >= 2) {
