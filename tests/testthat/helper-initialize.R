@@ -25,6 +25,12 @@ spark_install_winutils <- function(version) {
 testthat_spark_connection <- function() {
   if (!exists(".testthat_latest_spark", envir = .GlobalEnv))
     assign(".testthat_latest_spark", "2.3.0", envir = .GlobalEnv)
+
+  livy_branch <- Sys.getenv("TRAVIS_PULL_REQUEST_BRANCH")
+  if (nchar(livy_branch) > 0) {
+    options(sparklyr.livy.branch = livy_branch)
+  }
+
   livy_version <- Sys.getenv("LIVY_VERSION")
   test_databricks_connect <- Sys.getenv("TEST_DATABRICKS_CONNECT")
 
@@ -206,6 +212,7 @@ testthat_livy_connection <- function() {
         sparklyr.connect.timeout = 120,
         sparklyr.log.invoke = "cat"
       ),
+      version = version,
       sources = TRUE
     )
 
